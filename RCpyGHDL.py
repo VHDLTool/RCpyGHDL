@@ -1,13 +1,20 @@
+#pyGHDL libraries
 import pyGHDL.libghdl     as libghdl
 from pyGHDL.libghdl       import name_table, files_map, errorout_console
 from pyGHDL.libghdl.vhdl  import nodes, sem_lib
 import pyGHDL.libghdl.utils as pyutils
 import pyGHDL.libghdl.vhdl.nodes_meta as nodes_meta
 
+#xml parsing
+from xml.dom import minidom
+
+
 class RCpyGHDL:
+    handbook="handbook_STD_CNE_17062021.xml"
 
     def __init__(self, ghdl_option,filename):
-        """Initialization: set Ghdl options for filename analysis """  
+        """Initialization: set Ghdl options for filename analysis 
+                           get parameters from handbook """  
 
         self.ghdl_option=str(ghdl_option)
         self.filename=str(filename)
@@ -36,6 +43,22 @@ class RCpyGHDL:
          # Parse file
         self.file = sem_lib.Load_File(sfe)
 
+        #open handbook to get rules parameters
+        Hbk = minidom.parse(self.handbook)
+        #get all rule elements
+        for Rule in Hbk.getElementsByTagName("hb:Rule"):
+            #search for rules implemented 
+            # getElementsByTagName return a list of element. In our case only 1 field RuleUID       
+
+            if Rule.getElementsByTagName("hb:RuleUID")[0].firstChild.nodeValue == "CNE_02500":
+                self.CNE_02500_Relation=Rule.getElementsByTagName("hb:Relation")[0].firstChild.nodeValue
+                self.CNE_02500_Value=Rule.getElementsByTagName("hb:Value")[0].firstChild.nodeValue
+                print("CNE_02500 "+self.CNE_02500_Relation+self.CNE_02500_Value)
+
+            if Rule.getElementsByTagName("hb:RuleUID")[0].firstChild.nodeValue == "CNE_02600":
+                self.CNE_02600_Relation=Rule.getElementsByTagName("hb:Relation")[0].firstChild.nodeValue
+                self.CNE_02600_Value=Rule.getElementsByTagName("hb:Value")[0].firstChild.nodeValue
+                print("CNE_02600 "+self.CNE_02600_Relation+self.CNE_02600_Value)
 
 ########################
 ### Global functions
@@ -110,7 +133,15 @@ class RCpyGHDL:
                 if nodes_meta.Has_Port_Chain(nodes.Get_Kind(libraryUnit)):
                     #print("Info: Entity has got ports")
                     for port in pyutils.chain_iter(nodes.Get_Port_Chain(libraryUnit)):
-                        print(self.DisplayGenInfo(port))
+                        #get port name
+                        PortName = self.getIdentifier(port)
+                        #evaluate rule size
+                        if self.CNE_02500_Relation =="LT":
+                            if not (len(PortName)<int(self.CNE_02500_Value)):
+                                print(self.DisplayGenInfo(port))
+                        elif self.CNE_02500_Relation =="LET":
+                            if not (len(PortName)<=int(self.CNE_02500_Value)):
+                                print(self.DisplayGenInfo(port))
 
             #go to next node
             designUnit = nodes.Get_Chain(designUnit)
@@ -131,7 +162,15 @@ class RCpyGHDL:
                     #print("Info: Architecture  has got declarations")
                     #get every architecture declarations
                     for Declarations in pyutils.declarations_iter(libraryUnit):
-                        print(self.DisplayGenInfo(Declarations))
+                        #get signal name
+                        Signame = self.getIdentifier(Declarations)
+                        #evaluate rule size
+                        if self.CNE_02600_Relation =="LT":
+                            if not (len(Signame)<int(self.CNE_02600_Value)):
+                                print(self.DisplayGenInfo(Declarations))
+                        elif self.CNE_02600_Relation =="LET":
+                            if not (len(Signame)<=int(self.CNE_02600_Value)):
+                                print(self.DisplayGenInfo(Declarations))
 
             #go to next node
             designUnit = nodes.Get_Chain(designUnit)
