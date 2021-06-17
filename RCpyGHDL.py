@@ -53,12 +53,12 @@ class RCpyGHDL:
             if Rule.getElementsByTagName("hb:RuleUID")[0].firstChild.nodeValue == "CNE_02500":
                 self.CNE_02500_Relation=Rule.getElementsByTagName("hb:Relation")[0].firstChild.nodeValue
                 self.CNE_02500_Value=Rule.getElementsByTagName("hb:Value")[0].firstChild.nodeValue
-                print("CNE_02500 "+self.CNE_02500_Relation+self.CNE_02500_Value)
+                #print("CNE_02500 "+self.CNE_02500_Relation+self.CNE_02500_Value)
 
             if Rule.getElementsByTagName("hb:RuleUID")[0].firstChild.nodeValue == "CNE_02600":
                 self.CNE_02600_Relation=Rule.getElementsByTagName("hb:Relation")[0].firstChild.nodeValue
                 self.CNE_02600_Value=Rule.getElementsByTagName("hb:Value")[0].firstChild.nodeValue
-                print("CNE_02600 "+self.CNE_02600_Relation+self.CNE_02600_Value)
+                #print("CNE_02600 "+self.CNE_02600_Relation+self.CNE_02600_Value)
 
 ########################
 ### Global functions
