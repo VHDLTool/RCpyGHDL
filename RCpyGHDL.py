@@ -40,8 +40,11 @@ class RCpyGHDL:
             print("cannot open file "+ self.filename)
             quit()
 
-         # Parse file
-        self.file = sem_lib.Load_File(sfe)
+        # Parse file
+        try:
+            self.file = sem_lib.Load_File(sfe)
+        except:
+            print("ERROR parsing file "+ self.filename)
 
         #open handbook to get rules parameters
         Hbk = minidom.parse(self.handbook)
@@ -51,14 +54,20 @@ class RCpyGHDL:
             # getElementsByTagName return a list of element. In our case only 1 field RuleUID       
 
             if Rule.getElementsByTagName("hb:RuleUID")[0].firstChild.nodeValue == "CNE_02500":
-                self.CNE_02500_Relation=Rule.getElementsByTagName("hb:Relation")[0].firstChild.nodeValue
-                self.CNE_02500_Value=Rule.getElementsByTagName("hb:Value")[0].firstChild.nodeValue
-                #print("CNE_02500 "+self.CNE_02500_Relation+self.CNE_02500_Value)
+                try:
+                    self.CNE_02500_Relation=Rule.getElementsByTagName("hb:Relation")[0].firstChild.nodeValue
+                    self.CNE_02500_Value=Rule.getElementsByTagName("hb:Value")[0].firstChild.nodeValue
+                    #print("CNE_02500 "+self.CNE_02500_Relation+self.CNE_02500_Value)
+                except:
+                    print("ERROR reading CNE_02500 parameter from Handbook")
 
             if Rule.getElementsByTagName("hb:RuleUID")[0].firstChild.nodeValue == "CNE_02600":
-                self.CNE_02600_Relation=Rule.getElementsByTagName("hb:Relation")[0].firstChild.nodeValue
-                self.CNE_02600_Value=Rule.getElementsByTagName("hb:Value")[0].firstChild.nodeValue
-                #print("CNE_02600 "+self.CNE_02600_Relation+self.CNE_02600_Value)
+                try:
+                    self.CNE_02600_Relation=Rule.getElementsByTagName("hb:Relation")[0].firstChild.nodeValue
+                    self.CNE_02600_Value=Rule.getElementsByTagName("hb:Value")[0].firstChild.nodeValue
+                    #print("CNE_02600 "+self.CNE_02600_Relation+self.CNE_02600_Value)
+                except:
+                    print("ERROR reading CNE_02600 parameter from Handbook")              
 
 ########################
 ### Global functions
@@ -118,8 +127,11 @@ class RCpyGHDL:
 ########################
     def CNE_02500(self):
         """ Rule CNE_02500 to evaluate Length of entities name. This function report entity names."""
-         # Get first node of design units
-        designUnit = nodes.Get_First_Design_Unit(self.file)
+        # Get first node of design units
+        try:
+            designUnit = nodes.Get_First_Design_Unit(self.file)
+        except:
+            print("ERROR parsing file "+ self.filename+" for CNE_02500 rule")
 
         #iterate around all nodes
         while designUnit != nodes.Null_Iir:
@@ -142,6 +154,9 @@ class RCpyGHDL:
                         elif self.CNE_02500_Relation =="LET":
                             if not (len(PortName)<=int(self.CNE_02500_Value)):
                                 print(self.DisplayGenInfo(port))
+                        else:
+                            #others parameters are not relevant for this rule
+                            print("CNE_02500 parameter error. E,GT and GET are not relevant for this rule")
 
             #go to next node
             designUnit = nodes.Get_Chain(designUnit)
@@ -149,7 +164,10 @@ class RCpyGHDL:
     def CNE_02600(self):
         """ Rule CNE_02600 to evaluate Length of signal name. This function report signal names."""
         # Get first node of design units
-        designUnit = nodes.Get_First_Design_Unit(self.file)
+        try:
+            designUnit = nodes.Get_First_Design_Unit(self.file)
+        except:
+            print("ERROR parsing file "+ self.filename+" for CNE_02600 rule")
 
         while designUnit != nodes.Null_Iir:
             #analysing nodes of type library Unit
@@ -171,6 +189,9 @@ class RCpyGHDL:
                         elif self.CNE_02600_Relation =="LET":
                             if not (len(Signame)<=int(self.CNE_02600_Value)):
                                 print(self.DisplayGenInfo(Declarations))
+                        else:
+                            #others parameters are not relevant for this rule
+                            print("CNE_02500 parameter error. E,GT and GET are not relevant for this rule")
 
             #go to next node
             designUnit = nodes.Get_Chain(designUnit)
