@@ -19,25 +19,30 @@ class RCpyGHDL:
         self.ghdl_option=str(ghdl_option)
         self.filename=str(filename)
 
-
+        
         libghdl.initialize()
 
         # Print error messages on the console.
         errorout_console.Install_Handler()
-
+        
         # Set options. This must be done before analyze_init()
         libghdl.set_option(self.ghdl_option)
 
         # Finish initialization. This will load the standard package.
-        if libghdl.analyze_init_status() != 0:
-            print("libghdl initialization error")
-            quit()
+        try:
+            if libghdl.analyze_init_status() != 0:
+                print("ERROR libghdl initialization")
+                quit()
+        except:
+            print("ERROR libghdl initialization")
+
+        
 
         # Load the file
         file_id = name_table.Get_Identifier(self.filename)
         sfe = files_map.Read_Source_File(name_table.Null_Identifier, file_id)
         if sfe == files_map.No_Source_File_Entry:
-            print("cannot open file "+ self.filename)
+            print("ERROR cannot open file "+ self.filename)
             quit()
 
         # Parse file
@@ -60,6 +65,7 @@ class RCpyGHDL:
                     #print("CNE_02500 "+self.CNE_02500_Relation+self.CNE_02500_Value)
                 except:
                     print("ERROR reading CNE_02500 parameter from Handbook")
+                    pass
 
             if Rule.getElementsByTagName("hb:RuleUID")[0].firstChild.nodeValue == "CNE_02600":
                 try:
@@ -67,7 +73,8 @@ class RCpyGHDL:
                     self.CNE_02600_Value=Rule.getElementsByTagName("hb:Value")[0].firstChild.nodeValue
                     #print("CNE_02600 "+self.CNE_02600_Relation+self.CNE_02600_Value)
                 except:
-                    print("ERROR reading CNE_02600 parameter from Handbook")              
+                    print("ERROR reading CNE_02600 parameter from Handbook")
+                    pass             
 
 ########################
 ### Global functions
@@ -132,12 +139,12 @@ class RCpyGHDL:
             designUnit = nodes.Get_First_Design_Unit(self.file)
         except:
             print("ERROR parsing file "+ self.filename+" for CNE_02500 rule")
+            pass
 
         #iterate around all nodes
         while designUnit != nodes.Null_Iir:
             #analysing nodes of type library Unit
             libraryUnit = nodes.Get_Library_Unit(designUnit)
-
             #VHDL entity
             if nodes.Get_Kind(libraryUnit) == nodes.Iir_Kind.Entity_Declaration:
                 name=self.getIdentifier(libraryUnit)
@@ -168,6 +175,7 @@ class RCpyGHDL:
             designUnit = nodes.Get_First_Design_Unit(self.file)
         except:
             print("ERROR parsing file "+ self.filename+" for CNE_02600 rule")
+            pass
 
         while designUnit != nodes.Null_Iir:
             #analysing nodes of type library Unit
