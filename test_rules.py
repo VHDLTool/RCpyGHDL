@@ -3,20 +3,7 @@ import sys
 import os
 import RCpyGHDL
 import logging
-
-class LogFile(object):
-    """File-like object to log text using the `logging` module."""
-
-    def __init__(self, name=None):
-        self.logger = logging.getLogger(name)
-
-    def write(self, msg, level=logging.INFO):
-        self.logger.log(level, msg)
-
-    def flush(self):
-        for handler in self.logger.handlers:
-            handler.flush()
-
+import subprocess
 
 def AnalyzeFile(fichier):
    print('INFO:Analyze ',  fichier)
@@ -46,18 +33,17 @@ def AnalyzeAllFiles():
                 AnalyzeFile(fichier)
             else:
                 os.waitpid(newpid, 0)  # wait for fork to finish
-        finally:
+        except:
+            print("ERROR: Analysing "+fichier)    
             pass
 
-
-#initilize log file
-logging.basicConfig(level=logging.DEBUG, filename='analysis.log')
-logging.basicConfig(format='%(message)s', level=logging.DEBUG)
-
-
-# Redirect stdout and stderr
-sys.stdout = LogFile('stdout')
-sys.stderr = LogFile('stderr')
+#prepare log need tee on linux
+logfile = "analysis.log"
+tee = subprocess.Popen(["tee", logfile], stdin=subprocess.PIPE)
+# Cause tee's stdin to get a copy of our stdin/stdout (as well as that of any
+# child processes we spawn).
+os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
+os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
 #launch analysis
 AnalyzeAllFiles()
